@@ -236,7 +236,9 @@
 
   .totals-bar-wrap {
     flex: none;
+    /* dvh = visible viewport (excludes URL bar). vh fallback for old browsers. */
     height: 50vh;
+    height: 50dvh;
     padding: 4px 2px 2px 2px;     /* match chart-area shrink */
     overflow-x: auto;             /* scroll wider canvas (set in JS) */
     overflow-y: hidden;
@@ -250,6 +252,7 @@
   .totals-hbar-wrap {
     flex: none;
     height: 38vh;
+    height: 38dvh;
   }
 
   .totals-filters {

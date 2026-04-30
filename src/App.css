@@ -1,6 +1,11 @@
 .app {
   display: flex;
+  /* 100vh is the FULL screen, including the area behind a mobile
+     browser's URL bar. 100dvh is the dynamic visible viewport (Firefox
+     Android, iOS Safari, etc. with a top OR bottom address bar). The
+     vh fallback is for older browsers; modern ones use the second line. */
   height: 100vh;
+  height: 100dvh;
   background: #1c1f26;
   color: #e8eaed;
 }
@@ -9,12 +14,15 @@
   flex: 1;
   min-width: 0;
   overflow: auto;
+  /* Respect a bottom safe-area inset (gesture bar / curved screen). */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ── Auth screen ── */
 .auth-screen {
   display: flex;
   height: 100vh;
+  height: 100dvh;
   align-items: center;
   justify-content: center;
   background: #1c1f26;
