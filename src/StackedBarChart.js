@@ -96,7 +96,7 @@ function StackedBarChart({
           backgroundColor: data.map((_, idx) => colorForIdx(a.color, idx)),
           // 1.5px chart-area-bg-colored top border = visible gap between
           // stacked segments without losing the activity color anywhere else.
-          borderColor: '#232732',
+          borderColor: '#202124',
           borderWidth: { top: 1.5, bottom: 0, left: 0, right: 0 },
           borderSkipped: false,
           stack: 'hours',

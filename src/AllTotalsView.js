@@ -177,7 +177,7 @@ function AllTotalsView() {
       label: a.label,
       data: aggregatedKeys.map((k) => Math.round((aggregated[k][a.id] || 0) * 100) / 100),
       backgroundColor: a.color,
-      borderColor: '#232732',
+      borderColor: '#202124',
       borderWidth: { top: 1.5, bottom: 0, left: 0, right: 0 },
       borderSkipped: false,
       hoverBackgroundColor: lightenHex(a.color, 0.15),
@@ -313,7 +313,7 @@ function AllTotalsView() {
 
     const config = {
       type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: '#232732', borderWidth: 2, _labelColors: labelColors }] },
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: '#202124', borderWidth: 2, _labelColors: labelColors }] },
       options: {
         responsive: true,
         maintainAspectRatio: false,

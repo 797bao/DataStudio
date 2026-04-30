@@ -106,7 +106,7 @@ function HoursPerDayView({ year }) {
           label: a.label,
           data,
           backgroundColor: a.color,
-          borderColor: '#232732',
+          borderColor: '#202124',
           borderWidth: { top: 1.5, bottom: 0, left: 0, right: 0 },
           borderSkipped: false,
           stack: 'hours',

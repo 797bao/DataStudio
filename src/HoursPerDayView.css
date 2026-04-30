@@ -8,7 +8,7 @@
 .hpd-chart-area {
   flex: 1;
   min-width: 0;
-  background: #232732;
+  background: #202124;
   border-radius: 8px;
   border: 1px solid #3c3f47;
   padding: 10px 12px 12px;
@@ -53,14 +53,14 @@
   color: #9aa0a6;
   font-size: 13px;
   z-index: 10;
-  background: #232732; /* opaque so the empty canvas underneath isn't visible */
+  background: #202124; /* opaque so the empty canvas underneath isn't visible */
   border-radius: 6px;
 }
 
 .hpd-panel {
   width: 204px;
   flex-shrink: 0;
-  background: #232732;
+  background: #202124;
   border-radius: 8px;
   border: 1px solid #3c3f47;
   padding: 12px;
