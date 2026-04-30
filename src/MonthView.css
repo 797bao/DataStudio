@@ -1,0 +1,420 @@
+.month-view {
+  padding: 14px 16px 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Chart-area header: toggle ── title ── spacer (centers title within chart, not whole page) ── */
+.month-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.month-title {
+  margin: 0;
+  font-size: 26px;
+  color: #C58AF9;
+  font-weight: 700;
+  text-align: center;
+}
+
+.header-spacer { /* legacy alias of .header-right */ }
+
+.header-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.month-header .right-group {
+  justify-self: end;
+}
+
+.month-body {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  min-height: 0;
+}
+
+.chart-area {
+  flex: 1;
+  min-width: 0;
+  background: #232732;
+  border-radius: 8px;
+  border: 1px solid #3c3f47;
+  padding: 10px 12px 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-pane {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  position: relative;
+}
+
+/* ── View toggle (header row, left) ── */
+.view-toggle {
+  display: inline-flex;
+  background: #1c1f26;
+  border: 1px solid #3c3f47;
+  border-radius: 6px;
+  padding: 2px;
+  justify-self: start;
+}
+
+.view-toggle button {
+  background: transparent;
+  border: none;
+  color: #9aa0a6;
+  font-size: 12px;
+  padding: 4px 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.view-toggle button:hover {
+  color: #e8eaed;
+}
+
+.view-toggle button.active {
+  background: #1a73e8;
+  color: white;
+}
+
+.loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  color: #9aa0a6;
+  font-size: 13px;
+  z-index: 5;
+  background: #232732; /* covers any half-rendered chart underneath */
+}
+
+/* Shared "no data" message overlay — used by every view when the active
+   slice has zero entries. */
+.no-data-msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5a5f6b;
+  font-size: 16px;
+  font-style: italic;
+  pointer-events: none;
+  z-index: 4; /* above empty canvas, below the loading overlay */
+}
+
+.loading-spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(197, 138, 249, 0.2);
+  border-top-color: #C58AF9;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Right panel ── */
+.totals-panel {
+  width: 204px;
+  flex-shrink: 0;
+  background: #232732;
+  border-radius: 8px;
+  border: 1px solid #3c3f47;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.totals-header {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.total-stat {
+  flex: 1;
+  min-width: 0;
+  background: #1c1f26;
+  padding: 6px 4px;
+  border-radius: 6px;
+  border: 1px solid #3c3f47;
+  text-align: center;
+  overflow: hidden;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #9aa0a6;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.stat-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e8eaed;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-input {
+  width: 100%;
+  background: #1c1f26;
+  border: 1px solid #3c3f47;
+  color: #e8eaed;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+/* ── Goals section (between stats and search) ── */
+.goals-section {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #3c3f47;
+}
+
+.goals-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9aa0a6;
+  font-weight: 600;
+}
+
+.goals-add {
+  background: transparent;
+  border: 1px solid #5a5f6b;
+  color: #e8eaed;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goals-add:hover {
+  background: #1a73e8;
+  border-color: #1a73e8;
+}
+
+.goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goals-empty {
+  color: #666;
+  font-size: 11px;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.goal-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: filter 0.15s;
+}
+
+.goal-badge:hover { filter: brightness(1.1); }
+
+.goal-current {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.goal-target {
+  font-size: 10px;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.goal-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #1c1f26;
+  border: 1px solid #3c3f47;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.goal-editor select,
+.goal-editor input {
+  background: #2c2f38;
+  border: 1px solid #3c3f47;
+  color: #e8eaed;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.goal-editor select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.goal-editor-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.goal-editor-row {
+  display: flex;
+  gap: 4px;
+}
+
+.goal-editor-row button {
+  flex: 1;
+  min-width: 0;
+}
+
+.goal-editor-actions button {
+  border: none;
+  padding: 7px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.goal-save { background: #1a73e8; color: white; }
+.goal-save:hover:not(:disabled) { background: #4285f4; }
+.goal-save:disabled { background: #444; cursor: not-allowed; opacity: 0.5; }
+.goal-delete { background: #d32f2f; color: white; }
+.goal-delete:hover { background: #f44336; }
+.goal-cancel { background: transparent; border: 1px solid #5a5f6b !important; color: #e8eaed; }
+.goal-cancel:hover { background: rgba(255, 255, 255, 0.06); }
+
+.search-input:focus {
+  outline: none;
+  border-color: #1a73e8;
+}
+
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.activity-row:hover { background: rgba(255, 255, 255, 0.03); }
+
+.activity-row.off .activity-name { color: #666 !important; }
+.activity-row.off .activity-hours { color: #555; }
+
+.activity-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+
+.activity-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.activity-hours {
+  font-size: 16px;
+  color: #e8eaed;
+  font-variant-numeric: tabular-nums;
+  display: block;
+}
+
+/* ONLY button — hidden by default, swaps in for the hours on row hover. */
+.only-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid #5a5f6b;
+  color: #e8eaed;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.only-btn:hover {
+  background: #1a73e8;
+  border-color: #1a73e8;
+  color: white;
+}
+
+.activity-row:hover .activity-hours { display: none; }
+.activity-row:hover .only-btn { display: block; }

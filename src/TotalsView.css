@@ -1,0 +1,194 @@
+.totals-view {
+  padding: 14px 16px 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.totals-title {
+  margin: 0 0 8px;
+  font-size: 26px;
+  color: #C58AF9;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ── Date range filter bar (shared by AllTotals + AllHoursPerDay) ── */
+.range-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #232732;
+  border: 1px solid #3c3f47;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #9aa0a6;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.range-bar label {
+  color: #9aa0a6;
+  font-weight: 500;
+}
+
+.range-bar input[type="date"] {
+  background: #1c1f26;
+  border: 1px solid #3c3f47;
+  color: #e8eaed;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  color-scheme: dark;
+}
+
+.range-bar input[type="date"]:focus {
+  outline: none;
+  border-color: #1a73e8;
+}
+
+.range-clear {
+  background: transparent;
+  border: 1px solid #5a5f6b;
+  color: #e8eaed;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.range-clear:hover {
+  background: #1a73e8;
+  border-color: #1a73e8;
+  color: white;
+}
+
+.range-info {
+  margin-left: auto;
+  font-size: 11px;
+  color: #9aa0a6;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals-body {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  min-height: 0;
+  position: relative;
+}
+
+.totals-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  color: #9aa0a6;
+  font-size: 13px;
+  z-index: 10;
+  background: rgba(28, 31, 38, 0.9);
+  border-radius: 8px;
+}
+
+/* ── Left 40% — monthly stacked bar ── */
+.totals-bar-wrap {
+  flex: 2 1 0;
+  min-width: 0;
+  background: #232732;
+  border-radius: 8px;
+  border: 1px solid #3c3f47;
+  padding: 12px;
+  position: relative;
+}
+
+/* ── Middle 40% — pie on top, horizontal toggle bar below ── */
+.totals-side {
+  flex: 2 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.totals-pie-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  background: #232732;
+  border-radius: 8px;
+  border: 1px solid #3c3f47;
+  padding: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pie-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pie-center-label {
+  font-size: 11px;
+  color: #9aa0a6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pie-center-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e8eaed;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals-hbar-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  background: #232732;
+  border-radius: 8px;
+  border: 1px solid #3c3f47;
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hbar-header {
+  flex-shrink: 0;
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.hbar-canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+/* ── Right ~17% — filters (15% narrower than the original 20%) ── */
+.totals-filters {
+  flex: 0.85 1 0;
+  min-width: 0;
+  background: #232732;
+  border-radius: 8px;
+  border: 1px solid #3c3f47;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

@@ -1,0 +1,70 @@
+.hpd-view {
+  padding: 14px 16px 16px;
+  height: 100%;
+  display: flex;
+  gap: 8px;
+}
+
+.hpd-chart-area {
+  flex: 1;
+  min-width: 0;
+  background: #232732;
+  border-radius: 8px;
+  border: 1px solid #3c3f47;
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hpd-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.hpd-header .right-group {
+  justify-self: end;
+}
+
+.hpd-title {
+  margin: 0;
+  font-size: 26px;
+  color: #C58AF9;
+  font-weight: 700;
+  text-align: center;
+}
+
+.hpd-canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.hpd-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  color: #9aa0a6;
+  font-size: 13px;
+  z-index: 10;
+  background: #232732; /* opaque so the empty canvas underneath isn't visible */
+  border-radius: 6px;
+}
+
+.hpd-panel {
+  width: 204px;
+  flex-shrink: 0;
+  background: #232732;
+  border-radius: 8px;
+  border: 1px solid #3c3f47;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

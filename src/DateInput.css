@@ -1,0 +1,225 @@
+.dp {
+  position: relative;
+  display: inline-block;
+}
+
+.dp-trigger {
+  background: #1c1f26;
+  border: 1px solid #3c3f47;
+  color: #e8eaed;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 110px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-trigger.placeholder {
+  color: #5a5f6b;
+}
+
+.dp-trigger:hover {
+  border-color: #5a5f6b;
+}
+
+.dp-icon {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-left: auto;
+}
+
+/* ── Popover ── */
+.dp-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #2c2f38;
+  border: 1px solid #3c3f47;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 100;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  min-width: 260px;
+}
+
+.dp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.dp-nav {
+  background: transparent;
+  border: none;
+  color: #e8eaed;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.dp-nav:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dp-ym-wrap {
+  position: relative;
+}
+
+.dp-ym {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #3c3f47;
+  color: #e8eaed;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dp-ym:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dp-caret {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+/* The month/year dropdown — overlays the calendar (does NOT replace it) */
+.dp-ym-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2c2f38;
+  border: 1px solid #3c3f47;
+  border-radius: 6px;
+  padding: 4px;
+  margin: 0;
+  list-style: none;
+  z-index: 200;
+  max-height: 240px;
+  overflow-y: auto;
+  min-width: 110px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+}
+
+.dp-ym-item {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: #e8eaed;
+}
+
+.dp-ym-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dp-ym-item.active {
+  background: #1a73e8;
+  color: white;
+  font-weight: 600;
+}
+
+/* ── Calendar grid ── */
+.dp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.dp-weekday {
+  text-align: center;
+  font-size: 10px;
+  color: #9aa0a6;
+  text-transform: uppercase;
+  padding: 4px 0;
+  letter-spacing: 0.3px;
+}
+
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dp-day {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #e8eaed;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+  padding: 0;
+}
+
+.dp-day:hover:not(:disabled):not(.selected) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dp-day.dim {
+  color: #5a5f6b;
+}
+
+.dp-day.today {
+  border-color: #C58AF9;
+}
+
+.dp-day.selected {
+  background: #1a73e8;
+  color: white;
+  font-weight: 600;
+}
+
+.dp-day:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.dp-clear {
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid #5a5f6b;
+  color: #e8eaed;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  width: 100%;
+  font-family: inherit;
+}
+
+.dp-clear:hover {
+  background: rgba(255, 255, 255, 0.06);
+}

@@ -1,0 +1,155 @@
+.sidebar {
+  background: #2c2f38;
+  border-right: 1px solid #3c3f47;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.resize-handle {
+  position: absolute;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 10;
+  transition: background 0.15s;
+}
+
+.resize-handle:hover,
+.resize-handle:active {
+  background: rgba(197, 138, 249, 0.4);
+}
+
+.sidebar-header {
+  padding: 20px 18px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #e8eaed;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid #3c3f47;
+}
+
+.year-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  flex: 1;
+}
+
+/* All-time entries above the year list */
+.alltime-item {
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #C58AF9;
+  font-size: 14px;
+  font-weight: 600;
+  user-select: none;
+  margin-bottom: 4px;
+}
+
+.alltime-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+.alltime-item.active {
+  background: #1a73e8;
+  color: white;
+}
+
+.year-section {
+  margin-bottom: 4px;
+}
+
+.year-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #e8eaed;
+  font-size: 14px;
+  font-weight: 500;
+  user-select: none;
+}
+
+.year-header:hover { background: rgba(255, 255, 255, 0.05); }
+
+.chevron {
+  display: inline-block;
+  transition: transform 0.15s;
+  font-size: 11px;
+  color: #9aa0a6;
+}
+
+.chevron.open { transform: rotate(90deg); }
+
+.month-list {
+  list-style: none;
+  margin: 4px 0 8px 0;
+  padding: 0 0 0 8px;
+}
+
+.month-item {
+  padding: 8px 14px 8px 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #9aa0a6;
+  font-size: 13px;
+  user-select: none;
+  transition: background 0.1s, color 0.1s;
+}
+
+.month-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e8eaed;
+}
+
+.month-item.active {
+  background: #1a73e8;
+  color: white;
+  font-weight: 500;
+}
+
+/* Sub-items above January (Totals, Hours Per Day) — slightly distinct */
+.month-item.special {
+  color: #C58AF9;
+  font-weight: 500;
+}
+
+.month-item.special.active {
+  background: #1a73e8;
+  color: white;
+}
+
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid #3c3f47;
+}
+
+.signout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid #3c3f47;
+  color: #e8eaed;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.signout-btn:hover { background: rgba(255, 255, 255, 0.05); }
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+
+.signout-text { flex: 1; text-align: left; }
