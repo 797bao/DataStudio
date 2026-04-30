@@ -160,6 +160,22 @@ function MonthView({ year, month, onChangeView }) {
   const [editingGoal, setEditingGoal] = useState(null);
   useEffect(() => { setEditingGoal(null); }, [year, month]);
 
+  // Tab key cycles bar ↔ gantt while this view is mounted. PE has its
+  // own dedicated button (no key binding). We skip the toggle when
+  // focus is inside an input — otherwise typing in the search field
+  // or goal target would hijack the keystroke.
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key !== 'Tab') return;
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      e.preventDefault();
+      setView((v) => (v === 'bar' ? 'gantt' : 'bar'));
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
   const startAddGoal = () => setEditingGoal({ activityId: '', target: 30, isNew: true });
   const startEditGoal = (id, target) => setEditingGoal({ activityId: id, target, isNew: false });
   const cancelGoal = () => setEditingGoal(null);
