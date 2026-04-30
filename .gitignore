@@ -4,3 +4,6 @@ build
 .env.local
 .DS_Store
 npm-debug.log*
+
+# Claude Code local settings — machine-specific, shouldn't be shared
+.claude/
