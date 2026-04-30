@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ACTIVITIES, PE_ACTIVITY, STACK_ORDER } from './activities';
+import { PE_ACTIVITY, activitiesForYear, stackOrderForYear } from './activities';
 import { useYearTotals } from './useYearTotals';
 import { labelAnchor, labelAlign, labelOffset } from './labelLayout';
+import { useIsMobile } from './useIsMobile';
 import './HoursPerDayView.css';
 
 Chart.register(...registerables, ChartDataLabels);
@@ -13,6 +14,12 @@ const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 const dowIdx = (jsDay) => (jsDay + 6) % 7;
 
 function HoursPerDayView({ year }) {
+  // School was retired in 2024 — drop it from this view's activity set
+  // when year >= 2024 so it doesn't appear in the chart or the legend.
+  const ACTIVITIES = useMemo(() => activitiesForYear(year), [year]);
+  const STACK_ORDER = useMemo(() => stackOrderForYear(year), [year]);
+  const isMobile = useIsMobile();
+
   // 'total' | 'daily' | 'totalPe' | 'dailyPe' — exactly one is active across both groups.
   const [mode, setMode] = useState('total');
   const [search, setSearch] = useState('');
@@ -203,15 +210,23 @@ function HoursPerDayView({ year }) {
     if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
   }, []);
 
+  // Title is identical desktop/mobile; on phones we render it in a top
+  // bar that aligns with the hamburger button instead of inside the
+  // chart card (saves vertical space).
+  const titleEl = <h1 className="hpd-title">{year} Hours Per Day</h1>;
+
   return (
     <div className="hpd-view">
+      {isMobile && (
+        <div className="hpd-mobile-topbar">{titleEl}</div>
+      )}
       <div className="hpd-chart-area">
         <div className="hpd-header">
           <div className="view-toggle">
             <button className={mode === 'total' ? 'active' : ''} onClick={() => setMode('total')}>Total</button>
             <button className={mode === 'daily' ? 'active' : ''} onClick={() => setMode('daily')}>Daily</button>
           </div>
-          <h1 className="hpd-title">{year} Hours Per Day</h1>
+          {!isMobile && titleEl}
           <div className="view-toggle right-group">
             <button className={mode === 'totalPe' ? 'active' : ''} onClick={() => setMode('totalPe')}>Total PE</button>
             <button className={mode === 'dailyPe' ? 'active' : ''} onClick={() => setMode('dailyPe')}>Daily PE</button>

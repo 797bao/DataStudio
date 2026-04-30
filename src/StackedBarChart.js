@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { ACTIVITIES } from './activities';
 import { labelAnchor, labelAlign, labelOffset } from './labelLayout';
+import { useIsMobile } from './useIsMobile';
 
 Chart.register(...registerables, ChartDataLabels);
 
@@ -25,6 +26,14 @@ function StackedBarChart({
 }) {
   const canvasRef = useRef(null);
   const chartRef = useRef(null);
+  const isMobile = useIsMobile();
+  // Mobile only — y-axis labels rendered as HTML, positioned by reading
+  // the main chart's y-scale after it lays out. We tried a second
+  // Chart.js instance but its auto label-area calc kept clipping the
+  // leading "1" of "16/14/12/10". HTML lets us place each label
+  // exactly where its tick would be, in a tiny column with no chart.js
+  // layout heuristics in the way.
+  const [yLabels, setYLabels] = useState([]);
 
   // In-progress drag state — drives only the HTML overlay below, NOT the
   // chart redraw. The chart only re-renders on mouseup once the selection
@@ -33,11 +42,29 @@ function StackedBarChart({
   const [dragVis, setDragVis] = useState(null);
   const [overlayStyle, setOverlayStyle] = useState(null);
 
+  // Explicit y-axis max so the side y-axis chart stays in lockstep with
+  // the main chart. Floor of 16h, rounded up to the next even number
+  // above the largest stacked-day total.
+  const yMax = useMemo(() => {
+    const ym = `${year}-${String(month).padStart(2, '0')}`;
+    let m = 16;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const day = dailyTotals[`${ym}-${String(d).padStart(2, '0')}`] || {};
+      let total = 0;
+      for (const a of activities) {
+        if (visible.has(a.id)) total += day[a.id] || 0;
+      }
+      if (total > m) m = total;
+    }
+    return Math.ceil(m / 2) * 2;
+  }, [year, month, daysInMonth, dailyTotals, activities, visible]);
+
   useEffect(() => {
     const ctx = canvasRef.current.getContext('2d');
     const ym = `${year}-${String(month).padStart(2, '0')}`;
 
-    // X labels: day numbers + weekday abbreviation, mirroring the screenshot.
+    // X labels: stacked [day, dow] on both desktop and mobile. Mobile
+    // gets a 720px chart (horizontal scroll), so we have room for both lines.
     const labels = [];
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(year, month - 1, d);
@@ -93,6 +120,13 @@ function StackedBarChart({
         responsive: true,
         maintainAspectRatio: false,
         animation: { duration: 0 },
+        // On mobile, kill the chart's default left padding — the
+        // separate y-axis chart sits to our left, and any gap here
+        // breaks the visual continuity between the two.
+        // top: 8 leaves room for the topmost HTML y-label ("16")
+        // which is centered on the gridline and would otherwise be
+        // half-clipped by the chart-area edge.
+        layout: isMobile ? { padding: { left: 2, right: 2, top: 8 } } : {},
         // Hover anywhere over a day → highlight every segment in that stack.
         interaction: { mode: 'index', intersect: false, axis: 'x' },
         plugins: {
@@ -134,9 +168,14 @@ function StackedBarChart({
           },
           datalabels: {
             // Show hour value near the top of each non-trivial segment.
-            display: (ctx) => (ctx.dataset.data[ctx.dataIndex] || 0) >= 0.5,
+            // Higher threshold on mobile — thin bars + small segments
+            // would otherwise pile labels on top of each other.
+            display: (ctx) => {
+              const v = ctx.dataset.data[ctx.dataIndex] || 0;
+              return isMobile ? v >= 1 : v >= 0.5;
+            },
             color: (ctx) => ctx.dataset._activity?.labelColor || '#fff',
-            font: { weight: '500', size: 10 },
+            font: { weight: '500', size: isMobile ? 9 : 10 },
             formatter: (v) => {
               if (!v) return '';
               return Number.isInteger(v) ? String(v) : v.toFixed(1);
@@ -152,13 +191,15 @@ function StackedBarChart({
           x: {
             stacked: true,
             ticks: {
+              // Chart is 720px on mobile (forced via min-width), so all 30
+              // day labels fit comfortably without skipping.
               autoSkip: false,
               maxRotation: 0,
               color: (ctx) => (isTodayCol(ctx.index) ? '#C58AF9' : '#9aa0a6'),
               font: (ctx) =>
                 isTodayCol(ctx.index)
-                  ? { size: 12, weight: '600' }
-                  : { size: 11, weight: 'normal' },
+                  ? { size: isMobile ? 11 : 12, weight: '600' }
+                  : { size: isMobile ? 10 : 11, weight: 'normal' },
             },
             grid: { display: false },             // 4. no vertical grid lines
             border: { color: 'rgba(255,255,255,0.15)' },
@@ -167,13 +208,22 @@ function StackedBarChart({
             stacked: true,
             beginAtZero: true,
             min: 0,
-            suggestedMax: 16,                     // 3. floor of 16h, scales beyond if needed
+            // Explicit max instead of suggestedMax so the side y-axis
+            // chart on mobile (separate Chart.js instance) stays
+            // synchronized with the main chart.
+            max: yMax,
             ticks: {
               color: '#e8eaed',                   // 5. white-ish y-axis labels
               font: { size: 11, weight: '500' },  // 5. slight weight bump
               stepSize: 2,
+              // Hide on mobile — yAxisCanvasRef chart renders these
+              // labels in a fixed-position column instead.
+              display: !isMobile,
             },
-            grid: { color: 'rgba(255,255,255,0.16)' },  // 5. more visible row gridlines
+            // Always show horizontal gridlines so the user has visual
+            // reference for hour values, even on mobile where the y-axis
+            // labels live in a separate column to the left.
+            grid: { color: 'rgba(255,255,255,0.16)' },
             title: { display: false },
           },
         },
@@ -187,7 +237,26 @@ function StackedBarChart({
     } else {
       chartRef.current = new Chart(ctx, config);
     }
-  }, [year, month, daysInMonth, dailyTotals, visible, activities, selectedRange]);
+
+    // Mobile: re-populate the HTML y-axis labels using the main
+    // chart's actual scale pixel positions. rAF gives chart.js a
+    // beat to settle scales after first creation.
+    if (isMobile) {
+      requestAnimationFrame(() => {
+        if (!chartRef.current) return;
+        const yScale = chartRef.current.scales?.y;
+        if (!yScale) return;
+        const out = [];
+        for (let v = 0; v <= yMax; v += 2) {
+          out.push({ value: v, top: yScale.getPixelForValue(v) });
+        }
+        setYLabels(out);
+      });
+    } else if (yLabels.length) {
+      setYLabels([]);
+    }
+  }, [year, month, daysInMonth, dailyTotals, visible, activities, selectedRange, isMobile, yMax]);
+
 
   // ── Drag-to-select on the X axis ─────────────────────────────────────────
   // Click+drag horizontally over bars to select a day range; single click
@@ -284,22 +353,34 @@ function StackedBarChart({
     };
   }, [onSelectRange]);
 
-  // When the bar pane becomes visible after being hidden, the canvas
+  // When the bar/PE pane becomes visible after being hidden, the canvas
   // was sized at 0×0 — force chart.js to re-measure and redraw.
+  // ALSO: re-populate the HTML y-axis labels here. The data effect
+  // already populated them, but if we rendered while hidden the y-scale
+  // pixel positions all collapsed to 0; we need to recompute now that
+  // the canvas has a real height.
   useEffect(() => {
     if (active && chartRef.current) {
-      // Defer one frame so the parent's display:block has actually applied.
       const id = requestAnimationFrame(() => {
-        if (chartRef.current) {
-          chartRef.current.resize();
-          chartRef.current.update();
+        if (!chartRef.current) return;
+        chartRef.current.resize();
+        chartRef.current.update();
+        if (isMobile) {
+          const yScale = chartRef.current.scales?.y;
+          if (yScale) {
+            const out = [];
+            for (let v = 0; v <= yMax; v += 2) {
+              out.push({ value: v, top: yScale.getPixelForValue(v) });
+            }
+            setYLabels(out);
+          }
         }
       });
       return () => cancelAnimationFrame(id);
     }
-  }, [active]);
+  }, [active, isMobile, yMax]);
 
-  // Destroy on unmount
+  // Destroy on unmount.
   useEffect(() => {
     return () => {
       if (chartRef.current) {
@@ -309,21 +390,90 @@ function StackedBarChart({
     };
   }, []);
 
+  // Drag-selection overlay — same on desktop and mobile, just sized to
+  // whichever wrapper holds the canvas.
+  const dragOverlay = overlayStyle && (
+    <div
+      style={{
+        position: 'absolute',
+        ...overlayStyle,
+        background: 'rgba(197, 138, 249, 0.18)',
+        border: '1px solid rgba(197, 138, 249, 0.6)',
+        pointerEvents: 'none',
+        borderRadius: '2px',
+      }}
+    />
+  );
+
+  if (!isMobile) {
+    return (
+      <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+        <canvas ref={canvasRef} />
+        {dragOverlay}
+      </div>
+    );
+  }
+
+  // Mobile: pinned HTML y-axis on the left + horizontally-scrollable bars.
+  // The y-axis lives outside the scroll container so it stays visible
+  // when the user swipes through the 30 day columns. Each label's `top`
+  // is the actual scale.y.getPixelForValue(v) of the main chart, so
+  // they line up with the gridlines exactly.
   return (
-    <div style={{ position: 'relative', height: '100%', width: '100%' }}>
-      <canvas ref={canvasRef} />
-      {overlayStyle && (
+    <div style={{ display: 'flex', height: '100%', width: '100%' }}>
+      <div
+        style={{
+          width: '26px',
+          flexShrink: 0,
+          height: '100%',
+          position: 'relative',
+          // No clipping here — labels can overflow the column visually
+          // if needed (they won't, but it's safer than overflow:hidden).
+        }}
+      >
+        {yLabels.map(({ value, top }) => (
+          <div
+            key={value}
+            style={{
+              position: 'absolute',
+              top: `${top}px`,
+              right: 2,
+              transform: 'translateY(-50%)',
+              fontSize: '10px',
+              fontWeight: 500,
+              color: '#e8eaed',
+              fontVariantNumeric: 'tabular-nums',
+              lineHeight: 1,
+              pointerEvents: 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {value}
+          </div>
+        ))}
+      </div>
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          height: '100%',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
         <div
           style={{
-            position: 'absolute',
-            ...overlayStyle,
-            background: 'rgba(197, 138, 249, 0.18)',
-            border: '1px solid rgba(197, 138, 249, 0.6)',
-            pointerEvents: 'none',
-            borderRadius: '2px',
+            position: 'relative',
+            height: '100%',
+            // 26px y-axis + ~870px bars ≈ 896px effective width
+            // (~2.3× a 390px viewport — wider day columns).
+            minWidth: '870px',
           }}
-        />
-      )}
+        >
+          <canvas ref={canvasRef} />
+          {dragOverlay}
+        </div>
+      </div>
     </div>
   );
 }

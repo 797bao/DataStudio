@@ -7,7 +7,7 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-function Sidebar({ view, onSelect, user, onSignOut, width, onWidthChange }) {
+function Sidebar({ view, onSelect, user, onSignOut, width, onWidthChange, mobileOpen, onMobileClose }) {
   // Drag-to-resize. Listeners are attached to document so the user can drag
   // beyond the handle without losing the gesture.
   const startDrag = (e) => {
@@ -62,7 +62,17 @@ function Sidebar({ view, onSelect, user, onSignOut, width, onWidthChange }) {
   };
 
   return (
-    <nav className="sidebar" style={{ width: width, minWidth: width }}>
+    <nav
+      className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}
+      style={{ width: width, minWidth: width }}
+    >
+      <button
+        className="mobile-close-btn"
+        onClick={onMobileClose}
+        aria-label="Close menu"
+      >
+        ✕
+      </button>
       <div className="sidebar-header">Life Log</div>
       <ul className="year-list">
         {/* All-time pages — above the year list. Default to entire data span; */}

@@ -5,11 +5,13 @@ import { ACTIVITIES, STACK_ORDER } from './activities';
 import { useAllDailyTotals } from './useAllDailyTotals';
 import { labelAnchor, labelAlign, labelOffset } from './labelLayout';
 import DateInput from './DateInput';
+import { useIsMobile } from './useIsMobile';
 import './TotalsView.css';
 
 Chart.register(...registerables, ChartDataLabels);
 
 function AllTotalsView() {
+  const isMobile = useIsMobile();
   const [visible, setVisible] = useState(() => new Set(STACK_ORDER));
   const [search, setSearch] = useState('');
   const [hbarMode, setHbarMode] = useState('total');
@@ -146,6 +148,27 @@ function AllTotalsView() {
   const pieInst = useRef(null);
   const hbarInst = useRef(null);
 
+  // Mobile-only: HTML y-axis overlay labels for the bar chart.
+  const [barYLabels, setBarYLabels] = useState([]);
+
+  // Explicit y-max so the HTML overlay aligns with the chart's gridlines.
+  const barYMax = useMemo(() => {
+    let m = 0;
+    for (const k of aggregatedKeys) {
+      let total = 0;
+      for (const a of ACTIVITIES) {
+        if (visible.has(a.id)) total += aggregated[k][a.id] || 0;
+      }
+      if (total > m) m = total;
+    }
+    if (m === 0) return 100;
+    // Round up to a tidy number: 50 if <50, 100 if <100, 500 step otherwise.
+    if (m <= 50) return Math.ceil(m / 10) * 10;
+    if (m <= 200) return Math.ceil(m / 25) * 25;
+    if (m <= 1000) return Math.ceil(m / 100) * 100;
+    return Math.ceil(m / 500) * 500;
+  }, [aggregatedKeys, aggregated, visible]);
+
   // ── Stacked bar (years OR months depending on range size) ──
   useEffect(() => {
     if (!loaded || !barCanvas.current) return;
@@ -212,16 +235,30 @@ function AllTotalsView() {
         scales: {
           x: {
             stacked: true,
-            ticks: { color: '#e8eaed', font: { size: 13, weight: '500' } },
+            ticks: {
+              color: '#e8eaed',
+              font: { size: isMobile ? 11 : 13, weight: '500' },
+              autoSkip: !isMobile,           // mobile renders ALL labels (chart is 720px wide)
+              maxRotation: 0,
+            },
             grid: { display: false },
           },
           y: {
             stacked: true,
             beginAtZero: true,
-            ticks: { color: '#e8eaed', font: { size: 11, weight: '500' } },
+            min: 0,
+            max: barYMax,
+            ticks: {
+              color: '#e8eaed',
+              font: { size: 11, weight: '500' },
+              display: !isMobile,    // HTML overlay handles labels on mobile
+            },
             grid: { color: 'rgba(255,255,255,0.16)' },
           },
         },
+        // top: 8 keeps the topmost HTML y-label from clipping at the
+        // chart-area edge (label is centered on its tick line).
+        layout: isMobile ? { padding: { left: 4, right: 2, top: 8 } } : {},
       },
     };
 
@@ -236,7 +273,25 @@ function AllTotalsView() {
         if (barInst.current) { barInst.current.resize(); barInst.current.update(); setBarReady(true); }
       });
     }
-  }, [aggregatedKeys, aggregated, isMonthlyView, visible, loaded]);
+
+    // Populate HTML y-axis labels on mobile.
+    if (isMobile) {
+      requestAnimationFrame(() => {
+        if (!barInst.current) return;
+        const yScale = barInst.current.scales?.y;
+        if (!yScale) return;
+        // Pick a sensible step: ~5 ticks total.
+        const step = barYMax <= 50 ? 10 : barYMax <= 200 ? 50 : barYMax <= 1000 ? 200 : 500;
+        const out = [];
+        for (let v = 0; v <= barYMax; v += step) {
+          out.push({ value: v, top: yScale.getPixelForValue(v) });
+        }
+        setBarYLabels(out);
+      });
+    } else if (barYLabels.length) {
+      setBarYLabels([]);
+    }
+  }, [aggregatedKeys, aggregated, isMonthlyView, visible, loaded, isMobile, barYMax]);
 
   // ── Doughnut ──
   useEffect(() => {
@@ -440,7 +495,54 @@ function AllTotalsView() {
         )}
 
         <div className="totals-bar-wrap">
-          <canvas ref={barCanvas} />
+          {isMobile ? (
+            <div style={{ display: 'flex', height: '100%', width: '100%' }}>
+              <div
+                style={{
+                  width: '38px',     // wider than MonthView since values can hit 4-digit hours
+                  flexShrink: 0,
+                  height: '100%',
+                  position: 'relative',
+                }}
+              >
+                {barYLabels.map(({ value, top }) => (
+                  <div
+                    key={value}
+                    style={{
+                      position: 'absolute',
+                      top: `${top}px`,
+                      right: 2,
+                      transform: 'translateY(-50%)',
+                      fontSize: '10px',
+                      fontWeight: 500,
+                      color: '#e8eaed',
+                      fontVariantNumeric: 'tabular-nums',
+                      lineHeight: 1,
+                      pointerEvents: 'none',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {value}
+                  </div>
+                ))}
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  height: '100%',
+                  overflowX: 'auto',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+              >
+                <div style={{ position: 'relative', height: '100%', minWidth: '860px' }}>
+                  <canvas ref={barCanvas} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <canvas ref={barCanvas} />
+          )}
         </div>
 
         <div className="totals-side">

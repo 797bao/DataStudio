@@ -36,7 +36,17 @@
   flex: 1;
   min-width: 0;
   position: relative;
-  overflow: hidden; /* days flex-shrink to fit; no horizontal scroll */
+  overflow: hidden; /* desktop: days flex-shrink to fit; no horizontal scroll */
+}
+
+/* New wrapper inside .gantt-grid that holds the absolute grid-bg and
+   the flex day columns. On desktop it's 100% width (no effect); on
+   mobile it has min-width: ~700px and the parent .gantt-grid scrolls
+   horizontally inside the visible viewport. */
+.gantt-grid-inner {
+  position: relative;
+  height: 100%;
+  width: 100%;
 }
 
 .gantt-grid-bg {
@@ -186,4 +196,37 @@
   font-size: 9px;
   line-height: 1;
   opacity: 0.85;
+}
+
+/* ── Mobile portrait (≤768px) ──
+   Y-axis pinned & narrow (24-hour digits only); day-grid is twice as
+   wide as viewport with horizontal scroll, like the bar chart. */
+@media (max-width: 768px) {
+  /* Drop the y-axis from 44px to 24px — labels are 1–2 digits ("0", "12",
+     "24") so they fit easily. */
+  .gantt-y-axis {
+    width: 24px;
+  }
+  .hour-tick {
+    right: 2px;
+  }
+  .hour-label {
+    font-size: 9px;
+  }
+
+  /* Day grid scrolls horizontally; inner content forced wider so each
+     day column gets readable width. iOS momentum scrolling. */
+  .gantt-grid {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .gantt-grid-inner {
+    min-width: 720px;        /* matches bar chart effective width */
+  }
+
+  /* Day labels at bottom: shrink slightly so they don't dominate when
+     each column is ~24px wide. */
+  .day-num { font-size: 10px; }
+  .day-dow { font-size: 8px; }
 }

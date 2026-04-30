@@ -1,17 +1,33 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ACTIVITIES, ACTIVITY_BY_ID, PE_ACTIVITY, STACK_ORDER, DATA_START_YEAR, DATA_START_MONTH } from './activities';
+import {
+  ACTIVITY_BY_ID,
+  PE_ACTIVITY,
+  DATA_START_YEAR,
+  DATA_START_MONTH,
+  activitiesForYear,
+  stackOrderForYear,
+} from './activities';
 import { useMonthData } from './useMonthData';
 import { useEntriesData } from './useEntriesData';
 import { useGoals } from './useGoals';
 import StackedBarChart from './StackedBarChart';
 import GanttChart from './GanttChart';
 import MonthYearPicker from './MonthYearPicker';
+import { useIsMobile } from './useIsMobile';
 import './MonthView.css';
 
 function MonthView({ year, month, onChangeView }) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
+  const isMobile = useIsMobile();
+
+  // School was retired in 2024 — for views in 2024+ these helpers
+  // drop School from the activity list and stack order, so it won't
+  // appear in chart legends, the panel filter, or the TOTAL stat.
+  // Pre-2024 views still see it (historical data is preserved).
+  const ACTIVITIES = useMemo(() => activitiesForYear(year), [year]);
+  const STACK_ORDER = useMemo(() => stackOrderForYear(year), [year]);
 
   const [search, setSearch] = useState('');
   const [view, setView] = useState('bar'); // 'bar' | 'gantt' | 'pe'
@@ -167,8 +183,27 @@ function MonthView({ year, month, onChangeView }) {
       .sort((a, b) => (monthlyTotals[b.id] || 0) - (monthlyTotals[a.id] || 0));
   }, [view, search, monthlyTotals]);
 
+  // Picker is identical desktop/mobile; we just render it in different
+  // locations so on phones the title sits up next to the hamburger
+  // (rather than inside the chart card, eating vertical space).
+  const picker = (
+    <MonthYearPicker
+      year={year}
+      month={month}
+      onSelect={(y, m) => onChangeView && onChangeView({ kind: 'month', year: y, month: m })}
+      minYear={DATA_START_YEAR}
+      maxYear={currentYear}
+      minMonthInMinYear={DATA_START_MONTH}
+      currentYear={currentYear}
+      currentMonth={currentMonth}
+    />
+  );
+
   return (
     <div className="month-view">
+      {isMobile && (
+        <div className="month-mobile-topbar">{picker}</div>
+      )}
       <div className="month-body">
         <div className="chart-area">
           <div className="month-header">
@@ -177,18 +212,13 @@ function MonthView({ year, month, onChangeView }) {
               <button className={view === 'gantt' ? 'active' : ''} onClick={() => setView('gantt')}>Gantt</button>
               <button className={view === 'pe' ? 'active' : ''} onClick={() => setView('pe')}>PE</button>
             </div>
-            <MonthYearPicker
-              year={year}
-              month={month}
-              onSelect={(y, m) => onChangeView && onChangeView({ kind: 'month', year: y, month: m })}
-              minYear={DATA_START_YEAR}
-              maxYear={currentYear}
-              minMonthInMinYear={DATA_START_MONTH}
-              currentYear={currentYear}
-              currentMonth={currentMonth}
-            />
+            {!isMobile && picker}
             <div className="header-right">
-              {view === 'gantt' && (
+              {/* PE-overlay toggle is only useful when (a) Gantt view is
+                  active AND (b) the month actually has PE entries to
+                  show. Hide the button entirely otherwise — keeps the
+                  header clean across desktop and mobile. */}
+              {view === 'gantt' && hasPeData && (
                 <div className="view-toggle right-group">
                   <button
                     className={showPe ? 'active' : ''}

@@ -60,3 +60,58 @@
 }
 
 .auth-btn:hover { background: #5a95f5; }
+
+/* ── Mobile shell (≤768px) ──
+   Sidebar becomes a slide-in drawer (left); per-view stats/goals/
+   activities panel becomes another drawer (right). Both share one
+   backdrop. Hamburger and right-menu button float over content. */
+.mobile-menu-btn { display: none; }
+.mobile-right-btn { display: none; }
+.mobile-backdrop { display: none; }
+
+@media (max-width: 768px) {
+  .mobile-menu-btn,
+  .mobile-right-btn {
+    display: flex;
+    position: fixed;
+    top: 10px;
+    z-index: 110;             /* above drawers so the user can always close */
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    background: #2c2f38;
+    border: 1px solid #3c3f47;
+    border-radius: 8px;
+    color: #e8eaed;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-menu-btn { left: 10px; font-size: 22px; }
+  .mobile-right-btn { right: 10px; font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+  .mobile-menu-btn:active,
+  .mobile-right-btn:active { background: #3c3f47; }
+
+  /* Push the view's own header below the floating top buttons so they
+     don't collide. Each view's CSS already has its top padding/header. */
+  .content {
+    padding-top: 56px;
+  }
+
+  .app.mobile-sidebar-open .mobile-backdrop,
+  .app.mobile-right-open .mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 90;
+    animation: backdrop-in 0.2s ease-out;
+  }
+
+  @keyframes backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}

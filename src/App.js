@@ -31,6 +31,27 @@ function App() {
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT);
   const [widthLoaded, setWidthLoaded] = useState(false);
 
+  // Mobile drawer state — sidebar is fixed-position overlay below 768px.
+  // Opens via hamburger, closes via backdrop click, X button, or selecting
+  // a sidebar item. Always closed on desktop.
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  // Mobile right-side drawer — holds the per-view stats/goals/activities
+  // panel that lives beside the chart on desktop. Opens via top-right
+  // button, closes via backdrop or selecting/toggling activity rows.
+  const [mobileRightOpen, setMobileRightOpen] = useState(false);
+  const handleSelectView = (newView) => {
+    setView(newView);
+    setMobileSidebarOpen(false);
+    setMobileRightOpen(false);
+  };
+  // Opening one drawer closes the other so we never show both at once.
+  // Right button toggles (no inner X close button on that drawer).
+  const openLeft = () => { setMobileSidebarOpen(true); setMobileRightOpen(false); };
+  const toggleRight = () => {
+    setMobileSidebarOpen(false);
+    setMobileRightOpen((o) => !o);
+  };
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
@@ -94,19 +115,52 @@ function App() {
     );
   }
 
+  const appClass = [
+    'app',
+    mobileSidebarOpen ? 'mobile-sidebar-open' : '',
+    mobileRightOpen ? 'mobile-right-open' : '',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className="app">
+    <div className={appClass}>
+      <div
+        className="mobile-backdrop"
+        onClick={() => { setMobileSidebarOpen(false); setMobileRightOpen(false); }}
+      />
       <Sidebar
         view={view}
-        onSelect={setView}
+        onSelect={handleSelectView}
         user={user}
         onSignOut={handleSignOut}
         width={sidebarWidth}
         onWidthChange={(w) => setSidebarWidth(Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, w)))}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
       />
       <main className="content">
+        <button
+          className="mobile-menu-btn"
+          onClick={openLeft}
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
+        <button
+          className="mobile-right-btn"
+          onClick={toggleRight}
+          aria-label={mobileRightOpen ? 'Close stats panel' : 'Open stats panel'}
+        >
+          {mobileRightOpen ? '✕' : (
+            // Filter icon — 3 horizontal lines decreasing in width.
+            <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
+              <line x1="2"  y1="2"  x2="18" y2="2"  stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="5"  y1="7"  x2="15" y2="7"  stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="8"  y1="12" x2="12" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          )}
+        </button>
         {view.kind === 'month' && (
-          <MonthView year={view.year} month={view.month} onChangeView={setView} />
+          <MonthView year={view.year} month={view.month} onChangeView={handleSelectView} />
         )}
         {view.kind === 'totals' && <TotalsView year={view.year} />}
         {view.kind === 'hoursPerDay' && <HoursPerDayView year={view.year} />}

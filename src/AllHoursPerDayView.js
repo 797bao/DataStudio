@@ -5,6 +5,7 @@ import { ACTIVITIES, PE_ACTIVITY, STACK_ORDER } from './activities';
 import { useAllDailyTotals } from './useAllDailyTotals';
 import { labelAnchor, labelAlign, labelOffset } from './labelLayout';
 import DateInput from './DateInput';
+import { useIsMobile } from './useIsMobile';
 import './HoursPerDayView.css';
 
 Chart.register(...registerables, ChartDataLabels);
@@ -13,6 +14,7 @@ const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 const dowIdx = (jsDay) => (jsDay + 6) % 7; // 0 = Monday
 
 function AllHoursPerDayView() {
+  const isMobile = useIsMobile();
   const [mode, setMode] = useState('total'); // 'total' | 'daily' | 'totalPe' | 'dailyPe'
   const [search, setSearch] = useState('');
   const [visible, setVisible] = useState(() => new Set(STACK_ORDER));
@@ -198,16 +200,20 @@ function AllHoursPerDayView() {
   }, []);
 
   const titleText = (startDate || endDate) ? 'Range Hours Per Day' : 'All-Time Hours Per Day';
+  const titleEl = <h1 className="hpd-title">{titleText}</h1>;
 
   return (
     <div className="hpd-view">
+      {isMobile && (
+        <div className="hpd-mobile-topbar">{titleEl}</div>
+      )}
       <div className="hpd-chart-area">
         <div className="hpd-header">
           <div className="view-toggle">
             <button className={mode === 'total' ? 'active' : ''} onClick={() => setMode('total')}>Total</button>
             <button className={mode === 'daily' ? 'active' : ''} onClick={() => setMode('daily')}>Daily</button>
           </div>
-          <h1 className="hpd-title">{titleText}</h1>
+          {!isMobile && titleEl}
           <div className="view-toggle right-group">
             <button className={mode === 'totalPe' ? 'active' : ''} onClick={() => setMode('totalPe')}>Total PE</button>
             <button className={mode === 'dailyPe' ? 'active' : ''} onClick={() => setMode('dailyPe')}>Daily PE</button>

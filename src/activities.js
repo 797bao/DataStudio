@@ -32,6 +32,25 @@ export const ACTIVITY_BY_ID = Object.fromEntries(ALL_ACTIVITIES.map(a => [a.id, 
 // Activities to render in the default stacked bar (PE excluded).
 export const STACK_ORDER = ACTIVITIES.map(a => a.id);
 
+// School was retired starting 2024 — graduation. Year-scoped views drop
+// it entirely so it doesn't clutter the legend, activity list, or stats.
+// Pre-2024 views still include School so historical data renders correctly.
+const SCHOOL_RETIRED_YEAR = 2024;
+
+export function activitiesForYear(year) {
+  if (typeof year === 'number' && year >= SCHOOL_RETIRED_YEAR) {
+    return ACTIVITIES.filter(a => a.id !== 'School');
+  }
+  return ACTIVITIES;
+}
+
+export function stackOrderForYear(year) {
+  if (typeof year === 'number' && year >= SCHOOL_RETIRED_YEAR) {
+    return STACK_ORDER.filter(id => id !== 'School');
+  }
+  return STACK_ORDER;
+}
+
 // Owner of the database — must match the Firebase Auth UID used in security rules.
 export const OWNER_UID = 'G6LOOmF0nfQl8IeMeLGIDzEptYj1';
 

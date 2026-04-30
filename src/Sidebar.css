@@ -153,3 +153,60 @@
 }
 
 .signout-text { flex: 1; text-align: left; }
+
+/* ── Mobile drawer (≤768px) ──
+   Sidebar becomes fixed-position, slides in from the left. Inline
+   width/minWidth from App.js are overridden via !important — that's
+   the cleanest way given the prop-driven desktop sizing. */
+.mobile-close-btn { display: none; }
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    /* 280px → 180px (~35% narrower) — month and "Hours Per Day"
+       names still fit, more chart real estate stays visible behind. */
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 85vw;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease-out;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.45);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* Resize handle is desktop-only — drawer is fixed-width on mobile. */
+  .resize-handle { display: none; }
+
+  /* Make room for the X button at top-right of the drawer header. */
+  .sidebar-header { padding-right: 50px; }
+
+  .mobile-close-btn {
+    display: flex;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #9aa0a6;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 6px;
+    z-index: 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-close-btn:active {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}

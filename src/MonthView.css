@@ -395,19 +395,24 @@
   display: block;
 }
 
-/* ONLY button — hidden by default, swaps in for the hours on row hover. */
+/* ONLY button — always visible to the right of the hours number.
+   Tap/click filters the chart to JUST that activity. Compact styling
+   so it doesn't crowd the activity name in the side drawer. */
 .only-btn {
-  display: none;
+  display: inline-flex;
+  align-items: center;
   background: transparent;
   border: 1px solid #5a5f6b;
-  color: #e8eaed;
-  font-size: 12px;
+  color: #9aa0a6;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  padding: 4px 10px;
+  padding: 3px 7px;
   border-radius: 4px;
   cursor: pointer;
   text-transform: uppercase;
+  margin-left: 6px;
+  flex-shrink: 0;
 }
 
 .only-btn:hover {
@@ -416,5 +421,103 @@
   color: white;
 }
 
-.activity-row:hover .activity-hours { display: none; }
-.activity-row:hover .only-btn { display: block; }
+/* ── Mobile portrait (≤768px) ──
+   Title moves to its own topbar; chart fills the viewport; the
+   stats/goals/activities panel becomes a slide-in drawer from the
+   right (App.js sets .app.mobile-right-open to reveal it). */
+@media (max-width: 768px) {
+  .month-view {
+    padding: 12px;
+    height: 100%;       /* full available height (panel is a drawer, not stacked) */
+  }
+
+  /* Mobile-only top bar that hosts the MonthYearPicker.
+     Negative margin-top pulls it up into the .content padding area
+     (the same vertical strip as the fixed top buttons), so title and
+     hamburger sit on the same row. Horizontal padding reserves space
+     for both the hamburger (left) and the right-drawer button. */
+  .month-mobile-topbar {
+    height: 44px;
+    margin: -56px -12px 4px -12px;
+    padding: 0 56px 0 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+  .month-mobile-topbar > * { pointer-events: auto; }
+
+  /* Header: toggle group centered with the Gantt-PE button right-pinned. */
+  .month-header {
+    display: flex;
+    grid-template-columns: none;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .month-header .view-toggle {
+    /* default flex-item — centered by parent justify-content */
+  }
+  .month-header .header-right {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .month-title { font-size: 22px; }
+
+  /* Body fills the rest; chart-area takes all of body. */
+  .month-body {
+    flex-direction: column;
+    flex: 1;
+  }
+  /* Drop chart-area's chunky 10/12/12 padding to a hairline so the
+     bars + y-axis labels can use the full panel width. */
+  .chart-area {
+    flex: 1;
+    padding: 4px 2px 2px 2px;
+  }
+
+  /* Allow the bar/Gantt charts to be wider than viewport so each day
+     column gets readable width. Inner chart wrappers set their own
+     min-width; .chart-pane just provides the scroll container. */
+  .chart-pane {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Right drawer: slides in from the right when toggled via the
+     top-right button on .app. */
+  .totals-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform 0.25s ease-out;
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.45);
+    overflow-y: auto;
+    border-radius: 0;       /* full-edge drawer, not a card */
+    padding-top: 48px;      /* room for a future close button or breathing space */
+  }
+  .app.mobile-right-open .totals-panel {
+    transform: translateX(0);
+  }
+
+  /* Slightly tighter activity rows so more of the goals/activities fit
+     in the 280px-wide drawer. */
+  .stat-value { font-size: 16px; }
+  .activity-row { padding: 9px 4px; }
+  .activity-name { font-size: 13px; }
+  .activity-hours { font-size: 13px; }
+  /* ONLY button stays visible on mobile too — it's the only way to
+     "filter to just this activity" once we're not on a hover surface. */
+  .only-btn { font-size: 9px; padding: 2px 5px; margin-left: 4px; }
+}

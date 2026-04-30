@@ -192,3 +192,87 @@
   flex-direction: column;
   overflow: hidden;
 }
+
+/* ── Mobile portrait (≤768px) ──
+   Bar / pie / horizontal totals stack vertically and scroll inside
+   .content. Filters (search + activity list) are a right drawer. */
+@media (max-width: 768px) {
+  .totals-view {
+    padding: 12px;
+    height: auto;
+    min-height: 100%;
+  }
+
+  /* Pull the title up into the .content padding area so it sits on
+     the same row as the hamburger button (matches MonthView's topbar). */
+  .totals-title {
+    font-size: 22px;
+    margin: -56px -12px 4px -12px;
+    height: 44px;
+    padding: 0 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+  .totals-title > * { pointer-events: auto; }
+
+  .range-bar {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .range-info {
+    margin-left: 0;
+    width: 100%;
+    text-align: right;
+  }
+
+  .totals-body {
+    flex-direction: column;
+    flex: none;
+    gap: 10px;
+  }
+
+  .totals-bar-wrap {
+    flex: none;
+    height: 50vh;
+    padding: 4px 2px 2px 2px;     /* match chart-area shrink */
+    overflow-x: auto;             /* scroll wider canvas (set in JS) */
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .totals-side {
+    flex: none;
+    gap: 10px;
+  }
+  .totals-pie-wrap,
+  .totals-hbar-wrap {
+    flex: none;
+    height: 38vh;
+  }
+
+  .totals-filters {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform 0.25s ease-out;
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.45);
+    overflow-y: auto;
+    border-radius: 0;
+    padding-top: 48px;
+  }
+  .app.mobile-right-open .totals-filters {
+    transform: translateX(0);
+  }
+
+  .activity-row { padding: 9px 4px; }
+  .activity-name { font-size: 13px; }
+  .activity-hours { font-size: 13px; }
+  .only-btn { font-size: 9px; padding: 2px 5px; margin-left: 4px; }
+}

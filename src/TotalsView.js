@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ACTIVITIES, ACTIVITY_BY_ID, STACK_ORDER } from './activities';
+import { ACTIVITY_BY_ID, activitiesForYear, stackOrderForYear } from './activities';
 import { useYearTotals } from './useYearTotals';
 import { useGoals } from './useGoals';
 import { labelAnchor, labelAlign, labelOffset } from './labelLayout';
+import { useIsMobile } from './useIsMobile';
 import './TotalsView.css';
 
 Chart.register(...registerables, ChartDataLabels);
@@ -12,6 +13,12 @@ Chart.register(...registerables, ChartDataLabels);
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function TotalsView({ year }) {
+  // School was retired in 2024 — drop it for views in 2024+. Pre-2024
+  // years still see School (historical data).
+  const ACTIVITIES = useMemo(() => activitiesForYear(year), [year]);
+  const STACK_ORDER = useMemo(() => stackOrderForYear(year), [year]);
+  const isMobile = useIsMobile();
+
   const [visible, setVisible] = useState(() => new Set(STACK_ORDER));
   const [search, setSearch] = useState('');
   const [hbarMode, setHbarMode] = useState('total'); // 'total' | 'avg'
@@ -105,6 +112,25 @@ function TotalsView({ year }) {
   const pieInst = useRef(null);
   const hbarInst = useRef(null);
 
+  // Mobile only — HTML y-axis overlay state for the monthly bar chart.
+  const [barYLabels, setBarYLabels] = useState([]);
+
+  // Explicit y-max so the HTML y-axis stays in lockstep with the chart.
+  // 16h floor (most stacked-month rarely exceeds), rounded up to next
+  // multiple of stepSize when data is bigger.
+  const barYMax = useMemo(() => {
+    let m = 16;
+    for (const month of monthly) {
+      let total = 0;
+      for (const a of ACTIVITIES) {
+        if (visible.has(a.id)) total += month[a.id] || 0;
+      }
+      if (total > m) m = total;
+    }
+    // Round up to next multiple of 5 for tidy ticks on monthly totals.
+    return Math.ceil(m / 5) * 5;
+  }, [monthly, visible, ACTIVITIES]);
+
   // ── Monthly stacked bar (left 40%) ──
   useEffect(() => {
     if (!loaded || !barCanvas.current) return;
@@ -166,16 +192,34 @@ function TotalsView({ year }) {
         scales: {
           x: {
             stacked: true,
-            ticks: { color: '#e8eaed', font: { size: 13, weight: '500' } }, // larger month labels
+            ticks: {
+              color: '#e8eaed',
+              font: { size: isMobile ? 11 : 13, weight: '500' },
+              // Mobile chart is rendered at 720px (forced via CSS
+              // min-width on the canvas wrapper), so all 12 month
+              // labels fit without skipping.
+              autoSkip: !isMobile,
+              maxRotation: 0,
+            },
             grid: { display: false },
           },
           y: {
             stacked: true,
             beginAtZero: true,
-            ticks: { color: '#e8eaed', font: { size: 11, weight: '500' } },
+            min: 0,
+            max: barYMax,
+            ticks: {
+              color: '#e8eaed',
+              font: { size: 11, weight: '500' },
+              display: !isMobile,    // HTML overlay handles labels on mobile
+            },
             grid: { color: 'rgba(255,255,255,0.16)' },
           },
         },
+        // Tight left padding on mobile so bars start near the y-axis
+        // overlay edge (no wasted gutter). top: 8 so the topmost
+        // HTML y-label isn't half-clipped at the chart-area edge.
+        layout: isMobile ? { padding: { left: 4, right: 2, top: 8 } } : {},
       },
     };
 
@@ -203,7 +247,25 @@ function TotalsView({ year }) {
         barInst.current.update();
       });
     }
-  }, [monthly, visible, loaded]);
+
+    // Populate the HTML y-axis overlay on mobile.
+    if (isMobile) {
+      requestAnimationFrame(() => {
+        if (!barInst.current) return;
+        const yScale = barInst.current.scales?.y;
+        if (!yScale) return;
+        const out = [];
+        // Choose stepSize 5 for the monthly chart since values run 0–60+h.
+        const step = barYMax > 30 ? 10 : 5;
+        for (let v = 0; v <= barYMax; v += step) {
+          out.push({ value: v, top: yScale.getPixelForValue(v) });
+        }
+        setBarYLabels(out);
+      });
+    } else if (barYLabels.length) {
+      setBarYLabels([]);
+    }
+  }, [monthly, visible, loaded, isMobile, barYMax]);
 
   // ── Doughnut (top-middle, 40%) ──
   useEffect(() => {
@@ -422,9 +484,58 @@ function TotalsView({ year }) {
           <div className="no-data-msg">No data for {year}</div>
         )}
 
-        {/* 40% — monthly stacked bar */}
+        {/* 40% — monthly stacked bar.
+            Mobile: HTML y-axis overlay (sticky left) + horizontally-
+            scrollable canvas with all 12 month labels visible. */}
         <div className="totals-bar-wrap">
-          <canvas ref={barCanvas} />
+          {isMobile ? (
+            <div style={{ display: 'flex', height: '100%', width: '100%' }}>
+              <div
+                style={{
+                  width: '32px',
+                  flexShrink: 0,
+                  height: '100%',
+                  position: 'relative',
+                }}
+              >
+                {barYLabels.map(({ value, top }) => (
+                  <div
+                    key={value}
+                    style={{
+                      position: 'absolute',
+                      top: `${top}px`,
+                      right: 2,
+                      transform: 'translateY(-50%)',
+                      fontSize: '10px',
+                      fontWeight: 500,
+                      color: '#e8eaed',
+                      fontVariantNumeric: 'tabular-nums',
+                      lineHeight: 1,
+                      pointerEvents: 'none',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {value}
+                  </div>
+                ))}
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  height: '100%',
+                  overflowX: 'auto',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+              >
+                <div style={{ position: 'relative', height: '100%', minWidth: '866px' }}>
+                  <canvas ref={barCanvas} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <canvas ref={barCanvas} />
+          )}
         </div>
 
         {/* 40% — pie on top, horizontal toggle bar below */}

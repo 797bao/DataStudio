@@ -68,3 +68,70 @@
   flex-direction: column;
   overflow: hidden;
 }
+
+/* ── Mobile portrait (≤768px) ──
+   Chart fills viewport; the activity-list panel becomes a right-side
+   drawer (App sets .app.mobile-right-open to reveal it). */
+@media (max-width: 768px) {
+  .hpd-view {
+    padding: 12px;
+    height: 100%;
+    flex-direction: column;
+  }
+
+  /* Same negative-margin-pull-up trick as MonthView's topbar — title
+     sits on the hamburger row instead of below it. */
+  .hpd-mobile-topbar {
+    height: 44px;
+    margin: -56px -12px 4px -12px;
+    padding: 0 56px 0 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+  .hpd-mobile-topbar > * { pointer-events: auto; }
+  .hpd-mobile-topbar .hpd-title { font-size: 22px; }
+
+  /* Title moved to topbar; the two toggle groups now share one row. */
+  .hpd-header {
+    display: flex;
+    grid-template-columns: none;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .hpd-title { font-size: 22px; }
+
+  .hpd-chart-area {
+    flex: 1;
+    padding: 4px 2px 2px 2px;
+  }
+
+  .hpd-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform 0.25s ease-out;
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.45);
+    overflow-y: auto;
+    border-radius: 0;
+    padding-top: 48px;
+  }
+  .app.mobile-right-open .hpd-panel {
+    transform: translateX(0);
+  }
+
+  .activity-row { padding: 9px 4px; }
+  .activity-name { font-size: 13px; }
+  .activity-hours { font-size: 13px; }
+  .only-btn { font-size: 9px; padding: 2px 5px; margin-left: 4px; }
+}

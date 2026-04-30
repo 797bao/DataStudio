@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ACTIVITY_BY_ID } from './activities';
+import { useIsMobile } from './useIsMobile';
 import './GanttChart.css';
 
 // 'HH:MM' or 'HH:MM:SS' -> minutes since midnight ('24:00' -> 1440)
@@ -91,8 +92,13 @@ function formatHour12(h) {
   return `${h - 12} PM`;
 }
 
+// Compact 24-hour format for the mobile y-axis ("0", "2", …, "24") —
+// fits in a tighter column than "12 AM"/"2 PM".
+function formatHour24(h) { return String(h); }
+
 function GanttChart({ year, month, daysInMonth, entriesByDate, visible, showPe = false }) {
   const ym = `${year}-${String(month).padStart(2, '0')}`;
+  const isMobile = useIsMobile();
 
   const today = new Date();
   const todayDay =
@@ -161,19 +167,22 @@ function GanttChart({ year, month, daysInMonth, entriesByDate, visible, showPe =
       <div className="gantt-y-axis">
         {HOUR_TICKS.map((h) => (
           <div key={h} className="hour-tick" style={{ top: `${(h / 24) * 100}%` }}>
-            <span className="hour-label">{formatHour12(h)}</span>
+            <span className="hour-label">
+              {isMobile ? formatHour24(h) : formatHour12(h)}
+            </span>
           </div>
         ))}
       </div>
 
       <div className="gantt-grid">
-        <div className="gantt-grid-bg">
-          {HOUR_TICKS.slice(1, -1).map((h) => (
-            <div key={h} className="hgrid" style={{ top: `${(h / 24) * 100}%` }} />
-          ))}
-        </div>
+        <div className="gantt-grid-inner">
+          <div className="gantt-grid-bg">
+            {HOUR_TICKS.slice(1, -1).map((h) => (
+              <div key={h} className="hgrid" style={{ top: `${(h / 24) * 100}%` }} />
+            ))}
+          </div>
 
-        <div className="gantt-cols">
+          <div className="gantt-cols">
           {days.map(({ d, dow, blocks }) => {
             const isToday = todayDay === d;
             return (
@@ -209,6 +218,7 @@ function GanttChart({ year, month, daysInMonth, entriesByDate, visible, showPe =
               </div>
             );
           })}
+        </div>
         </div>
       </div>
 
