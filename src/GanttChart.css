@@ -66,6 +66,17 @@
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.gantt-now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #C58AF9;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
 .gantt-cols {
   display: flex;
   height: 100%;

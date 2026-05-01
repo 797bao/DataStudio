@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ACTIVITY_BY_ID } from './activities';
 import { useIsMobile } from './useIsMobile';
 import './GanttChart.css';
@@ -106,6 +106,20 @@ function GanttChart({ year, month, daysInMonth, entriesByDate, visible, showPe =
       ? today.getDate()
       : null;
 
+  const [nowMinutes, setNowMinutes] = useState(() => {
+    const n = new Date();
+    return n.getHours() * 60 + n.getMinutes();
+  });
+
+  useEffect(() => {
+    if (todayDay === null) return;
+    const id = setInterval(() => {
+      const n = new Date();
+      setNowMinutes(n.getHours() * 60 + n.getMinutes());
+    }, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [todayDay]);
+
   // Custom hover tooltip — instantaneous, styled to match the bar-chart tooltip.
   const wrapRef = useRef(null);
   const tooltipRef = useRef(null);
@@ -180,6 +194,12 @@ function GanttChart({ year, month, daysInMonth, entriesByDate, visible, showPe =
             {HOUR_TICKS.slice(1, -1).map((h) => (
               <div key={h} className="hgrid" style={{ top: `${(h / 24) * 100}%` }} />
             ))}
+            {todayDay !== null && (
+              <div
+                className="gantt-now-line"
+                style={{ top: `${(nowMinutes / 1440) * 100}%` }}
+              />
+            )}
           </div>
 
           <div className="gantt-cols">
