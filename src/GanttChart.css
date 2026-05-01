@@ -70,8 +70,8 @@
   position: absolute;
   left: 0;
   right: 0;
-  height: 2px;
-  background: #C58AF9;
+  height: 0;
+  border-top: 1px dashed #C58AF9;
   transform: translateY(-50%);
   pointer-events: none;
   z-index: 10;
