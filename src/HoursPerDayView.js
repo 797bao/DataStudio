@@ -1,10 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { PE_ACTIVITY, activitiesForYear, stackOrderForYear } from './activities';
+import {
+  PE_ACTIVITY,
+  activitiesForYear,
+  stackOrderForYear,
+  DATA_START_YEAR,
+  DATA_START_MONTH,
+} from './activities';
 import { useYearTotals } from './useYearTotals';
 import { labelAnchor, labelAlign, labelOffset } from './labelLayout';
 import { useIsMobile } from './useIsMobile';
+import YearMonthPicker from './YearMonthPicker';
 import './HoursPerDayView.css';
 
 Chart.register(...registerables, ChartDataLabels);
@@ -13,7 +20,19 @@ const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 // JS getDay(): 0=Sun..6=Sat. Map to our Mon-first index 0..6.
 const dowIdx = (jsDay) => (jsDay + 6) % 7;
 
-function HoursPerDayView({ year }) {
+function HoursPerDayView({ year, onChangeView }) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const minMonthInYear = year === DATA_START_YEAR ? DATA_START_MONTH : 1;
+  const maxMonthInYear = year === currentYear ? currentMonth : 12;
+
+  const handlePick = ({ year: y, month: m }) => {
+    if (!onChangeView) return;
+    if (m == null) onChangeView({ kind: 'hoursPerDay', year: y });
+    else onChangeView({ kind: 'month', year: y, month: m });
+  };
+
   // School was retired in 2024 — drop it from this view's activity set
   // when year >= 2024 so it doesn't appear in the chart or the legend.
   const ACTIVITIES = useMemo(() => activitiesForYear(year), [year]);
@@ -213,7 +232,18 @@ function HoursPerDayView({ year }) {
   // Title is identical desktop/mobile; on phones we render it in a top
   // bar that aligns with the hamburger button instead of inside the
   // chart card (saves vertical space).
-  const titleEl = <h1 className="hpd-title">{year} Hours Per Day</h1>;
+  const titleEl = (
+    <h1 className="hpd-title">
+      <YearMonthPicker
+        year={year}
+        yearLabel="Hours Per Day"
+        selectedMonth={null}
+        onSelect={handlePick}
+        minMonthInYear={minMonthInYear}
+        maxMonthInYear={maxMonthInYear}
+      />
+    </h1>
+  );
 
   return (
     <div className="hpd-view">

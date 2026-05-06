@@ -1,18 +1,37 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ACTIVITY_BY_ID, activitiesForYear, stackOrderForYear } from './activities';
+import {
+  ACTIVITY_BY_ID,
+  activitiesForYear,
+  stackOrderForYear,
+  DATA_START_YEAR,
+  DATA_START_MONTH,
+} from './activities';
 import { useYearTotals } from './useYearTotals';
 import { useGoals } from './useGoals';
 import { labelAnchor, labelAlign, labelOffset } from './labelLayout';
 import { useIsMobile } from './useIsMobile';
+import YearMonthPicker from './YearMonthPicker';
 import './TotalsView.css';
 
 Chart.register(...registerables, ChartDataLabels);
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-function TotalsView({ year }) {
+function TotalsView({ year, onChangeView }) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const minMonthInYear = year === DATA_START_YEAR ? DATA_START_MONTH : 1;
+  const maxMonthInYear = year === currentYear ? currentMonth : 12;
+
+  const handlePick = ({ year: y, month: m }) => {
+    if (!onChangeView) return;
+    if (m == null) onChangeView({ kind: 'totals', year: y });
+    else onChangeView({ kind: 'month', year: y, month: m });
+  };
+
   // School was retired in 2024 — drop it for views in 2024+. Pre-2024
   // years still see School (historical data).
   const ACTIVITIES = useMemo(() => activitiesForYear(year), [year]);
@@ -469,7 +488,16 @@ function TotalsView({ year }) {
 
   return (
     <div className="totals-view">
-      <h1 className="totals-title">{year} Totals</h1>
+      <h1 className="totals-title">
+        <YearMonthPicker
+          year={year}
+          yearLabel="Totals"
+          selectedMonth={null}
+          onSelect={handlePick}
+          minMonthInYear={minMonthInYear}
+          maxMonthInYear={maxMonthInYear}
+        />
+      </h1>
       <div className="totals-body">
         {/* Loading overlay floats above the (always-mounted) canvases so
             chart.js can size them correctly even before data arrives.

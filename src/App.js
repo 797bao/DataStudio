@@ -162,8 +162,8 @@ function App() {
         {view.kind === 'month' && (
           <MonthView year={view.year} month={view.month} onChangeView={handleSelectView} />
         )}
-        {view.kind === 'totals' && <TotalsView year={view.year} />}
-        {view.kind === 'hoursPerDay' && <HoursPerDayView year={view.year} />}
+        {view.kind === 'totals' && <TotalsView year={view.year} onChangeView={handleSelectView} />}
+        {view.kind === 'hoursPerDay' && <HoursPerDayView year={view.year} onChangeView={handleSelectView} />}
         {view.kind === 'allTotals' && <AllTotalsView />}
         {view.kind === 'allHoursPerDay' && <AllHoursPerDayView />}
       </main>
