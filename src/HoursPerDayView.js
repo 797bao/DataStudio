@@ -20,17 +20,21 @@ const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 // JS getDay(): 0=Sun..6=Sat. Map to our Mon-first index 0..6.
 const dowIdx = (jsDay) => (jsDay + 6) % 7;
 
-function HoursPerDayView({ year, onChangeView }) {
+function HoursPerDayView({ year }) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
   const minMonthInYear = year === DATA_START_YEAR ? DATA_START_MONTH : 1;
   const maxMonthInYear = year === currentYear ? currentMonth : 12;
 
-  const handlePick = ({ year: y, month: m }) => {
-    if (!onChangeView) return;
-    if (m == null) onChangeView({ kind: 'hoursPerDay', year: y });
-    else onChangeView({ kind: 'month', year: y, month: m });
+  // null = whole year (default). Set to a month number (1-12) to filter
+  // the weekday bucketing + panel totals to just that month's data.
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  // Reset the month filter when the user navigates to a different year.
+  useEffect(() => { setSelectedMonth(null); }, [year]);
+
+  const handlePick = ({ month: m }) => {
+    setSelectedMonth(m == null ? null : m);
   };
 
   // School was retired in 2024 — drop it from this view's activity set
@@ -47,7 +51,20 @@ function HoursPerDayView({ year, onChangeView }) {
   // Loading overlay stays up until BOTH data is loaded AND the chart is drawn.
   const [chartReady, setChartReady] = useState(false);
 
-  const { data: dailyTotals, loaded } = useYearTotals(year);
+  const { data: dailyTotalsFull, loaded } = useYearTotals(year);
+
+  // When a month is selected, filter the year's daily totals down to just
+  // that month so the weekday buckets + panel totals reflect the month.
+  const dailyTotals = useMemo(() => {
+    if (selectedMonth == null) return dailyTotalsFull;
+    const out = {};
+    const mm = String(selectedMonth).padStart(2, '0');
+    for (const [date, day] of Object.entries(dailyTotalsFull)) {
+      if (date.slice(5, 7) === mm) out[date] = day;
+    }
+    return out;
+  }, [dailyTotalsFull, selectedMonth]);
+
   const hasData = useMemo(
     () => Object.keys(dailyTotals).length > 0,
     [dailyTotals]
@@ -237,7 +254,7 @@ function HoursPerDayView({ year, onChangeView }) {
       <YearMonthPicker
         year={year}
         yearLabel="Hours Per Day"
-        selectedMonth={null}
+        selectedMonth={selectedMonth}
         onSelect={handlePick}
         minMonthInYear={minMonthInYear}
         maxMonthInYear={maxMonthInYear}

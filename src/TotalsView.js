@@ -19,17 +19,21 @@ Chart.register(...registerables, ChartDataLabels);
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-function TotalsView({ year, onChangeView }) {
+function TotalsView({ year }) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
   const minMonthInYear = year === DATA_START_YEAR ? DATA_START_MONTH : 1;
   const maxMonthInYear = year === currentYear ? currentMonth : 12;
 
-  const handlePick = ({ year: y, month: m }) => {
-    if (!onChangeView) return;
-    if (m == null) onChangeView({ kind: 'totals', year: y });
-    else onChangeView({ kind: 'month', year: y, month: m });
+  // null = whole year (default). Set to a month number (1-12) to filter
+  // every aggregation/chart on this page to just that month's daily data.
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  // Reset the month filter whenever the user navigates to a different year.
+  useEffect(() => { setSelectedMonth(null); }, [year]);
+
+  const handlePick = ({ month: m }) => {
+    setSelectedMonth(m == null ? null : m);
   };
 
   // School was retired in 2024 — drop it for views in 2024+. Pre-2024
@@ -44,7 +48,21 @@ function TotalsView({ year, onChangeView }) {
   const [barReady, setBarReady] = useState(false);
   const [pieReady, setPieReady] = useState(false);
   const [hbarReady, setHbarReady] = useState(false);
-  const { data: dailyTotals, loaded } = useYearTotals(year);
+  const { data: dailyTotalsFull, loaded } = useYearTotals(year);
+
+  // Filter the year's daily totals down to the selected month when one is
+  // active. Every downstream aggregation (monthly buckets, yearly totals,
+  // daysWithData) reads `dailyTotals` so flipping the picker re-renders
+  // the whole page with just that month's slice.
+  const dailyTotals = useMemo(() => {
+    if (selectedMonth == null) return dailyTotalsFull;
+    const out = {};
+    const mm = String(selectedMonth).padStart(2, '0');
+    for (const [date, day] of Object.entries(dailyTotalsFull)) {
+      if (date.slice(5, 7) === mm) out[date] = day;
+    }
+    return out;
+  }, [dailyTotalsFull, selectedMonth]);
   // Yearly goals — stored at goals/<year>/<activityId>: hours
   const { goals, setGoal, removeGoal } = useGoals(`${year}`);
 
@@ -492,7 +510,7 @@ function TotalsView({ year, onChangeView }) {
         <YearMonthPicker
           year={year}
           yearLabel="Totals"
-          selectedMonth={null}
+          selectedMonth={selectedMonth}
           onSelect={handlePick}
           minMonthInYear={minMonthInYear}
           maxMonthInYear={maxMonthInYear}
