@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signInWithCustomToken, signOut } from 'firebase/auth';
 import { ref, onValue, set as fbSet } from 'firebase/database';
 import { auth, googleProvider, database } from './firebase';
 import { OWNER_UID } from './activities';
@@ -58,6 +58,20 @@ function App() {
       setAuthReady(true);
     });
     return unsub;
+  }, []);
+
+  // Widget WebView auto-auth: Google's OAuth popup is blocked inside Android
+  // WebViews, so the MyStats app appends ?authToken=<owner custom JWT> and we
+  // sign in with it directly. Firebase persistence keeps the session after.
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get('authToken');
+    if (token) {
+      signInWithCustomToken(auth, token)
+        .catch(console.error)
+        .finally(() => {
+          window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+        });
+    }
   }, []);
 
   // Load saved sidebar width once authenticated as owner
