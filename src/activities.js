@@ -15,7 +15,7 @@ export const ACTIVITIES = [
   { id: 'MiscProjects', label: 'Misc Projects', color: '#d31779', labelColor: '#fff' },
   { id: 'Arts',         label: 'Arts',          color: '#cddc39', labelColor: '#000' },
   { id: 'Music',        label: 'Music',         color: '#8bffff', labelColor: '#000' },
-  { id: 'JobHunt',      label: 'Job Hunt',      color: '#f5c6ff', labelColor: '#000' },
+  { id: 'JobHunt',      label: 'Career',        color: '#f5c6ff', labelColor: '#000' },
   { id: 'AI',           label: 'AI',            color: '#92d4c0', labelColor: '#000' },
   { id: 'School',       label: 'School',        color: '#ffad3f', labelColor: '#000' },
   // PE (#ff9900) is intentionally excluded from the stacked bar chart.
