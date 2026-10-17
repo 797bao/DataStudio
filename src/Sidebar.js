@@ -84,6 +84,12 @@ function Sidebar({ view, onSelect, user, onSignOut, width, onWidthChange, mobile
           Totals
         </li>
         <li
+          className={`alltime-item ${view.kind === 'bodyStats' ? 'active' : ''}`}
+          onClick={() => onSelect({ kind: 'bodyStats' })}
+        >
+          Body Stats
+        </li>
+        <li
           className={`alltime-item ${view.kind === 'allHoursPerDay' ? 'active' : ''}`}
           onClick={() => onSelect({ kind: 'allHoursPerDay' })}
         >
