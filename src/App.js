@@ -9,7 +9,6 @@ import TotalsView from './TotalsView';
 import HoursPerDayView from './HoursPerDayView';
 import AllTotalsView from './AllTotalsView';
 import AllHoursPerDayView from './AllHoursPerDayView';
-import BodyStatsView from './BodyStatsView';
 import './App.css';
 
 const SIDEBAR_MIN = 160;
@@ -181,7 +180,6 @@ function App() {
         {view.kind === 'hoursPerDay' && <HoursPerDayView year={view.year} />}
         {view.kind === 'allTotals' && <AllTotalsView />}
         {view.kind === 'allHoursPerDay' && <AllHoursPerDayView />}
-        {view.kind === 'bodyStats' && <BodyStatsView />}
       </main>
     </div>
   );
